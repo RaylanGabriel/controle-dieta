@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
+import { FoodAutocomplete } from '@/components/food-autocomplete'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -62,6 +63,27 @@ export default function AdicionarPage() {
   const updateItem = (id: string, field: keyof MealItemInput, value: string | number) => {
     setItems(items.map(item => 
       item.id === id ? { ...item, [field]: value } : item
+    ))
+  }
+
+  const handleFoodSelect = (id: string, food: { 
+    nome: string
+    quantidade_padrao: string
+    calorias: number
+    proteina: number
+    carboidratos: number
+    gordura: number 
+  }) => {
+    setItems(items.map(item => 
+      item.id === id ? { 
+        ...item, 
+        nome: food.nome,
+        quantidade: food.quantidade_padrao,
+        calorias: food.calorias,
+        proteina: food.proteina || 0,
+        carboidratos: food.carboidratos || 0,
+        gordura: food.gordura || 0,
+      } : item
     ))
   }
 
@@ -209,11 +231,11 @@ export default function AdicionarPage() {
                   <FieldGroup>
                     <Field>
                       <FieldLabel>Nome do alimento</FieldLabel>
-                      <Input
-                        placeholder="Ex: Pao integral"
+                      <FoodAutocomplete
                         value={item.nome}
-                        onChange={(e) => updateItem(item.id, 'nome', e.target.value)}
-                        required
+                        onChange={(value) => updateItem(item.id, 'nome', value)}
+                        onSelectFood={(food) => handleFoodSelect(item.id, food)}
+                        placeholder="Digite para buscar alimentos..."
                       />
                     </Field>
                     <Field>

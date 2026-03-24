@@ -7,9 +7,10 @@ interface MealTimelineProps {
   meals: MealWithItems[]
   onToggleComplete: (mealId: string, completed: boolean) => void
   onSelectOption: (itemId: string, optionId: string) => void
+  onDelete: (mealId: string) => void
 }
 
-export function MealTimeline({ meals, onToggleComplete, onSelectOption }: MealTimelineProps) {
+export function MealTimeline({ meals, onToggleComplete, onSelectOption, onDelete }: MealTimelineProps) {
   return (
     <div className="relative">
       {/* Timeline line */}
@@ -17,7 +18,7 @@ export function MealTimeline({ meals, onToggleComplete, onSelectOption }: MealTi
 
       {/* Meal cards */}
       <div className="space-y-4 relative">
-        {meals.map((meal, index) => (
+        {meals.map((meal) => (
           <div key={meal.id} className="relative pl-14">
             {/* Timeline dot */}
             <div className="absolute left-[21px] top-4 w-2 h-2 rounded-full bg-primary ring-4 ring-background" />
@@ -26,6 +27,7 @@ export function MealTimeline({ meals, onToggleComplete, onSelectOption }: MealTi
               meal={meal}
               onToggleComplete={onToggleComplete}
               onSelectOption={onSelectOption}
+              onDelete={onDelete}
             />
           </div>
         ))}

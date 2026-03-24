@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, ChevronDown, ChevronUp, Clock } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, Clock, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -12,10 +12,12 @@ interface MealCardProps {
   meal: Meal & { items: (MealItem & { options?: { id: string; nome: string; quantidade: string; calorias: number; is_active: boolean }[] })[] }
   onToggleComplete: (mealId: string, completed: boolean) => void
   onSelectOption: (itemId: string, optionId: string) => void
+  onDelete: (mealId: string) => void
 }
 
-export function MealCard({ meal, onToggleComplete, onSelectOption }: MealCardProps) {
+export function MealCard({ meal, onToggleComplete, onSelectOption, onDelete }: MealCardProps) {
   const [expanded, setExpanded] = useState(!meal.concluida)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const totalCalories = meal.items.reduce((acc, item) => acc + item.calorias, 0)
 
@@ -29,6 +31,16 @@ export function MealCard({ meal, onToggleComplete, onSelectOption }: MealCardPro
 
   const formatTime = (time: string) => {
     return time.slice(0, 5)
+  }
+
+  const handleDelete = () => {
+    if (confirmDelete) {
+      onDelete(meal.id)
+    } else {
+      setConfirmDelete(true)
+      // Reset confirm state after 3 seconds
+      setTimeout(() => setConfirmDelete(false), 3000)
+    }
   }
 
   return (
@@ -84,16 +96,35 @@ export function MealCard({ meal, onToggleComplete, onSelectOption }: MealCardPro
             ))}
           </div>
 
-          {!meal.concluida && (
+          <div className="flex gap-2 mt-4">
+            {!meal.concluida && (
+              <Button
+                onClick={() => onToggleComplete(meal.id, true)}
+                className="flex-1"
+                variant="secondary"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Marcar como concluida
+              </Button>
+            )}
+            
             <Button
-              onClick={() => onToggleComplete(meal.id, true)}
-              className="w-full mt-4"
-              variant="secondary"
+              onClick={handleDelete}
+              variant={confirmDelete ? "destructive" : "outline"}
+              size={meal.concluida ? "default" : "icon"}
+              className={cn(
+                meal.concluida && "flex-1"
+              )}
             >
-              <Check className="w-4 h-4 mr-2" />
-              Marcar como concluida
+              <Trash2 className="w-4 h-4" />
+              {confirmDelete && (
+                <span className="ml-2">Confirmar exclusao</span>
+              )}
+              {meal.concluida && !confirmDelete && (
+                <span className="ml-2">Excluir</span>
+              )}
             </Button>
-          )}
+          </div>
         </CardContent>
       )}
     </Card>

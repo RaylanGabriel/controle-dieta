@@ -75,6 +75,18 @@ export function useMeals(date: string) {
     mutate()
   }
 
+  const deleteMeal = async (mealId: string) => {
+    const supabase = createClient()
+    
+    // Delete will cascade to meal_items and food_options
+    await supabase
+      .from('meals')
+      .delete()
+      .eq('id', mealId)
+
+    mutate()
+  }
+
   const selectFoodOption = async (itemId: string, optionId: string) => {
     const supabase = createClient()
     
@@ -134,6 +146,7 @@ export function useMeals(date: string) {
     isLoading,
     error,
     toggleMealComplete,
+    deleteMeal,
     selectFoodOption,
     mutate,
   }
