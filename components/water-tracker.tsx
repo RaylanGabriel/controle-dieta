@@ -8,18 +8,18 @@ import { Button } from '@/components/ui/button'
 
 interface WaterTrackerProps {
   date: string
+  metaAgua?: number
 }
 
 const GLASS_ML = 250 // cada copo = 250ml
-const GOAL_ML = 2500 // meta diaria = 2.5L
-const MAX_GLASSES = 10 // maximo de 10 copos
 
-export function WaterTracker({ date }: WaterTrackerProps) {
+export function WaterTracker({ date, metaAgua = 2500 }: WaterTrackerProps) {
   const [waterMl, setWaterMl] = useState(0)
   const [loading, setLoading] = useState(true)
 
+  const maxGlasses = Math.ceil(metaAgua / GLASS_ML)
   const glasses = Math.ceil(waterMl / GLASS_ML)
-  const percentage = Math.min((waterMl / GOAL_ML) * 100, 100)
+  const percentage = Math.min((waterMl / metaAgua) * 100, 100)
 
   useEffect(() => {
     const fetchWater = async () => {
@@ -44,7 +44,7 @@ export function WaterTracker({ date }: WaterTrackerProps) {
   }, [date])
 
   const updateWater = async (newMl: number) => {
-    const clampedMl = Math.max(0, Math.min(newMl, MAX_GLASSES * GLASS_ML))
+    const clampedMl = Math.max(0, Math.min(newMl, maxGlasses * GLASS_ML))
     setWaterMl(clampedMl)
 
     const supabase = createClient()
@@ -90,7 +90,7 @@ export function WaterTracker({ date }: WaterTrackerProps) {
           <span className="font-semibold text-sm">Agua</span>
         </div>
         <span className="text-xs text-muted-foreground">
-          {waterMl}ml / {GOAL_ML}ml
+          {waterMl}ml / {metaAgua}ml
         </span>
       </div>
 
@@ -103,8 +103,8 @@ export function WaterTracker({ date }: WaterTrackerProps) {
       </div>
 
       {/* Glasses grid */}
-      <div className="flex items-center justify-center gap-1 mb-3">
-        {Array.from({ length: MAX_GLASSES }).map((_, i) => {
+      <div className="flex items-center justify-center flex-wrap gap-1 mb-3">
+        {Array.from({ length: maxGlasses }).map((_, i) => {
           const isFilled = i < glasses
           return (
             <button
@@ -148,7 +148,7 @@ export function WaterTracker({ date }: WaterTrackerProps) {
           variant="outline" 
           size="sm" 
           onClick={addGlass}
-          disabled={glasses >= MAX_GLASSES}
+          disabled={glasses >= maxGlasses}
           className="h-8 w-8 p-0"
         >
           <Plus className="w-4 h-4" />

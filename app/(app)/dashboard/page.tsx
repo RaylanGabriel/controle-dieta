@@ -42,7 +42,7 @@ export default function DashboardPage() {
       <main className="flex-1 px-4 py-6">
         <div className="max-w-lg mx-auto space-y-6">
           {/* Water Tracker */}
-          <WaterTracker date={today} />
+          <WaterTracker date={today} metaAgua={profile?.meta_agua_ml || 2500} />
 
           {/* Meals Section */}
           <div>

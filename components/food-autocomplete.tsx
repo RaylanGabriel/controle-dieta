@@ -5,37 +5,58 @@ import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
 import { Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-interface CommonFood {
-  id: string
-  nome: string
-  quantidade_padrao: string
-  calorias: number
-  proteina: number
-  carboidratos: number
-  gordura: number
-  categoria: string
-}
+import type { CommonFood } from '@/lib/types'
 
 interface FoodAutocompleteProps {
   value: string
+  quantidade: string
   onChange: (value: string) => void
-  onSelectFood: (food: CommonFood) => void
+  onQuantidadeChange: (value: string) => void
+  onValuesChange: (values: { calorias: number; proteina: number; carboidratos: number; gordura: number }) => void
   placeholder?: string
   className?: string
 }
 
 export function FoodAutocomplete({ 
   value, 
-  onChange, 
-  onSelectFood,
+  quantidade,
+  onChange,
+  onQuantidadeChange,
+  onValuesChange,
   placeholder = "Digite o nome do alimento...",
   className 
 }: FoodAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<CommonFood[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedFood, setSelectedFood] = useState<CommonFood | null>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
+
+  // Parse quantity to get grams
+  const parseQuantityToGrams = (qty: string): number => {
+    const match = qty.match(/(\d+)/)
+    return match ? parseInt(match[1]) : 100
+  }
+
+  // Calculate proportional values based on quantity
+  const calculateValues = (food: CommonFood, grams: number) => {
+    const multiplier = grams / 100
+    return {
+      calorias: Math.round(food.calorias * multiplier),
+      proteina: Math.round(food.proteina * multiplier * 10) / 10,
+      carboidratos: Math.round(food.carboidratos * multiplier * 10) / 10,
+      gordura: Math.round(food.gordura * multiplier * 10) / 10,
+    }
+  }
+
+  // Update values when quantity changes
+  useEffect(() => {
+    if (selectedFood && quantidade) {
+      const grams = parseQuantityToGrams(quantidade)
+      const values = calculateValues(selectedFood, grams)
+      onValuesChange(values)
+    }
+  }, [quantidade, selectedFood])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -76,8 +97,14 @@ export function FoodAutocomplete({
   }, [value])
 
   const handleSelect = (food: CommonFood) => {
+    setSelectedFood(food)
     onChange(food.nome)
-    onSelectFood(food)
+    onQuantidadeChange(food.quantidade_padrao)
+    
+    const grams = parseQuantityToGrams(food.quantidade_padrao)
+    const values = calculateValues(food, grams)
+    onValuesChange(values)
+    
     setIsOpen(false)
   }
 
@@ -87,7 +114,12 @@ export function FoodAutocomplete({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            onChange(e.target.value)
+            if (e.target.value !== selectedFood?.nome) {
+              setSelectedFood(null)
+            }
+          }}
           onFocus={() => suggestions.length > 0 && setIsOpen(true)}
           placeholder={placeholder}
           className="pl-10"
@@ -112,7 +144,7 @@ export function FoodAutocomplete({
                     <div>
                       <p className="font-medium text-sm">{food.nome}</p>
                       <p className="text-xs text-muted-foreground">
-                        {food.quantidade_padrao}
+                        por 100g
                       </p>
                     </div>
                     <div className="text-right">
@@ -127,6 +159,12 @@ export function FoodAutocomplete({
             </ul>
           )}
         </div>
+      )}
+
+      {selectedFood && (
+        <p className="text-xs text-primary mt-1">
+          Valores calculados para {quantidade || '100g'} de {selectedFood.nome}
+        </p>
       )}
     </div>
   )

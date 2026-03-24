@@ -36,7 +36,7 @@ export default function AdicionarPage() {
   const [selectedType, setSelectedType] = useState(mealTypes[0].value)
   const [horario, setHorario] = useState(mealTypes[0].defaultTime)
   const [items, setItems] = useState<MealItemInput[]>([
-    { id: '1', nome: '', quantidade: '', calorias: 0, proteina: 0, carboidratos: 0, gordura: 0 }
+    { id: '1', nome: '', quantidade: '100g', calorias: 0, proteina: 0, carboidratos: 0, gordura: 0 }
   ])
 
   const handleTypeChange = (type: string) => {
@@ -50,7 +50,7 @@ export default function AdicionarPage() {
   const addItem = () => {
     setItems([
       ...items,
-      { id: Date.now().toString(), nome: '', quantidade: '', calorias: 0, proteina: 0, carboidratos: 0, gordura: 0 }
+      { id: Date.now().toString(), nome: '', quantidade: '100g', calorias: 0, proteina: 0, carboidratos: 0, gordura: 0 }
     ])
   }
 
@@ -66,24 +66,9 @@ export default function AdicionarPage() {
     ))
   }
 
-  const handleFoodSelect = (id: string, food: { 
-    nome: string
-    quantidade_padrao: string
-    calorias: number
-    proteina: number
-    carboidratos: number
-    gordura: number 
-  }) => {
+  const updateItemValues = (id: string, values: { calorias: number; proteina: number; carboidratos: number; gordura: number }) => {
     setItems(items.map(item => 
-      item.id === id ? { 
-        ...item, 
-        nome: food.nome,
-        quantidade: food.quantidade_padrao,
-        calorias: food.calorias,
-        proteina: food.proteina || 0,
-        carboidratos: food.carboidratos || 0,
-        gordura: food.gordura || 0,
-      } : item
+      item.id === id ? { ...item, ...values } : item
     ))
   }
 
@@ -233,19 +218,24 @@ export default function AdicionarPage() {
                       <FieldLabel>Nome do alimento</FieldLabel>
                       <FoodAutocomplete
                         value={item.nome}
+                        quantidade={item.quantidade}
                         onChange={(value) => updateItem(item.id, 'nome', value)}
-                        onSelectFood={(food) => handleFoodSelect(item.id, food)}
+                        onQuantidadeChange={(value) => updateItem(item.id, 'quantidade', value)}
+                        onValuesChange={(values) => updateItemValues(item.id, values)}
                         placeholder="Digite para buscar alimentos..."
                       />
                     </Field>
                     <Field>
                       <FieldLabel>Quantidade</FieldLabel>
                       <Input
-                        placeholder="Ex: 2 fatias (60g)"
+                        placeholder="Ex: 100g, 150g, 200g"
                         value={item.quantidade}
                         onChange={(e) => updateItem(item.id, 'quantidade', e.target.value)}
                         required
                       />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Altere a quantidade para recalcular automaticamente
+                      </p>
                     </Field>
                     <div className="grid grid-cols-2 gap-3">
                       <Field>

@@ -20,8 +20,20 @@ export interface Profile {
   id: string
   nome: string | null
   meta_calorias_diarias: number
+  meta_agua_ml: number
   created_at: string
   updated_at: string
+}
+
+export interface CommonFood {
+  id: string
+  nome: string
+  quantidade_padrao: string
+  calorias: number
+  proteina: number
+  carboidratos: number
+  gordura: number
+  categoria: string
 }
 
 export interface Meal {
